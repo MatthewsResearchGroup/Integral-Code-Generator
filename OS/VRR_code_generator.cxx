@@ -134,6 +134,7 @@ std::string xyz_tran(const std::array<int, 3>& ang_mom)
 
 std::string NewNameScheme(const std::array<int, 3>& ang_mom)
 {
+    // return orbital name, like for d(2,0,0), return d200
     std::string s;
     int tot_ang = ang_mom[0] + ang_mom[1] + ang_mom[2];
     if (tot_ang == 0)
@@ -157,7 +158,20 @@ std::string NewNameScheme(const std::array<int, 3>& ang_mom)
     return s;
 }
 
-
+int dirchoose(const std::array<int, 3> a)
+{
+    int xyz = 0;
+    int minx = INT_MAX;
+    for (auto i=0; i < 3; i++)
+    {
+        if ((a[i] != 0) and (a[i] < minx))
+        {
+            xyz = i;
+            minx = a[i];
+        }
+    }
+    return xyz;
+}
 
 std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m)
 {
@@ -238,7 +252,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     auto dmins2 = d;
     
     std::string s;
-    s.append("double ");
+    s.append("    double ");
     std::array<int,3> s_orbital {0,0,0};
     if (a == s_orbital and b == s_orbital and c == s_orbital and d == s_orbital)
     {
@@ -583,14 +597,15 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
     if (center_start == 'a')
     {
         // determine x,y,z direction to decrease
-        for (auto i = 0; i < 3; i++)
-        {
-            if (a[i] != 0)
-            {
-                xyz = i;
-                break;
-            }
-        }
+        auto xyz = dirchoose(a);
+        // for (auto i = 0; i < 3; i++)
+        // {
+        //     if (a[i] != 0)
+        //     {
+        //         xyz = i;
+        //         break;
+        //     }
+        // }
         amins1[xyz] = a[xyz] - 1;
         amins2[xyz] = a[xyz] - 2;
         bmins1[xyz] = b[xyz] - 1;
@@ -621,14 +636,15 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
     else if (center_start == 'b')
     {
         // determine x,y,z direction to decrease
-        for (auto i = 0; i < 3; i++)
-        {
-            if (b[i] != 0)
-            {
-                xyz = i;
-                break;
-            }
-        }
+        auto xyz = dirchoose(b);
+        // for (auto i = 0; i < 3; i++)
+        // {
+        //     if (b[i] != 0)
+        //     {
+        //         xyz = i;
+        //         break;
+        //     }
+        // }
         amins1[xyz] = a[xyz] - 1;
         bmins1[xyz] = b[xyz] - 1;
         bmins2[xyz] = b[xyz] - 2;
@@ -659,14 +675,15 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
     else if (center_start == 'c')
     {
         // determine x,y,z direction to decrease
-        for (auto i = 0; i < 3; i++)
-        {
-            if (c[i] != 0)
-            {
-                xyz = i;
-                break;
-            }
-        }
+        auto xyz = dirchoose(c);
+        // for (auto i = 0; i < 3; i++)
+        // {
+        //     if (c[i] != 0)
+        //     {
+        //         xyz = i;
+        //         break;
+        //     }
+        // }
         amins1[xyz] = a[xyz] - 1;
         bmins1[xyz] = b[xyz] - 1;
         cmins1[xyz] = c[xyz] - 1;
@@ -697,14 +714,15 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
     else if (center_start == 'd')
     {
         // determine x,y,z direction to decrease
-        for (auto i = 0; i < 3; i++)
-        {
-            if (d[i] != 0)
-            {
-                xyz = i;
-                break;
-            }
-        }
+        auto xyz = dirchoose(d);
+        // for (auto i = 0; i < 3; i++)
+        // {
+        //     if (d[i] != 0)
+        //     {
+        //         xyz = i;
+        //         break;
+        //     }
+        // }
         amins1[xyz] = a[xyz] - 1;
         bmins1[xyz] = b[xyz] - 1;
         cmins1[xyz] = c[xyz] - 1;
@@ -844,7 +862,8 @@ void save_int(int la, int lb, int lc, int ld)
                     std::array<int, 3> bxyz = {bx,by,bz};
                     std::array<int, 3> cxyz = {cx,cy,cz};
                     std::array<int, 3> dxyz = {dx,dy,dz};
-                    printf("I_[%d+%d*%d+%d*%d*%d+%d*%d*%d*%d+(idx+idy*nab)*%d]", ia, ib, lla, ic, lla, llb, id, lla, llb, llc, llabcd);
+                    // cab + (ia+ib*lla+ic*lla*llb+id*lla*llb*llc)*nab + ccd*lla*llb*llc*lld*nab
+                    printf("    I_[idx + (%d + %d * %d + %d * %d * %d + %d * %d * %d * %d) * nab + idy * nab * %d]", ia, ib, lla, ic, lla, llb, id, lla, llb, llc, llabcd);
                     std::cout << " += " << namemap(axyz,bxyz,cxyz,dxyz,0) << " ;"<< std::endl;
                     ia++;
                 }
@@ -893,18 +912,19 @@ void eri(int la, int lb, int lc, int ld, std::map<std::array<int, 13>, std::stri
 
 int main()
 {
-    std::array<int, 3> a {0,0,0};
+    std::array<int, 3> a {0,1,1};
     std::array<int, 3> b {0,0,0};
     std::array<int, 3> c {0,0,0};
     std::array<int, 3> d {0,0,0};
+    // std::cout << dirchoose(b) << std::endl;
     // auto a_name = NewNameScheme(a);
     // std::cout << "a_name = " << a_name << std::endl;
-    int m = 0;
-    auto name_str = namemap(a,b,c,d,1);
+    // int m = 0;
+    // auto name_str = namemap(a,b,c,d,1);
     // std::cout << name_str << std::endl;
-    int la = 1;
+    int la = 6;
     int lb = 0;
-    int lc = 1;
+    int lc = 6;
     int ld = 0;
     std::map<std::array<int, 13>, std::string> osmap;
     eri(la,lb,lc,ld,osmap);
