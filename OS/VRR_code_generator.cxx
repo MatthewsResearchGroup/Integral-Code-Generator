@@ -1,11 +1,9 @@
 #include <iostream>
 #include <set>
-#include <map>
-#include <array>
+// #include <array>
 #include <limits.h>
 #include <map>
-
-#define ss std::array<int, 3> {0,0,0}
+#include "VRR_code_generator.h"
 
 void f(int num);
 
@@ -750,29 +748,6 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
              
 }
 
-void code_generator(int num, std::set<int>& s)
-{
-    //for (auto it = s.begin(); it != s.end(); ++it)
-    //    std::cout<< " " << *it;
-    //std::cout << "\n" ;
-    if (s.count(num) != 0)
-        return;
-    if (num != 0 & num!= 1) 
-    {
-        s.insert(num);
-        f(num);
-        code_generator(num-1,s);
-        code_generator(num-2,s);
-    } 
-}
-
-void f(int num)
-{
-    if (num != 0 & num != 1)
-        printf("f[%d] = f[%d] + f[%d];\n", num, num-1, num-2);
-}
-
-
 void code_print(std::array<int, 3>& a , std::array<int, 3>& b, std::array<int, 3>& c, std::array<int, 3>& d, int m, std::map<std::array<int, 13>, std::string>& osmap)
 {
     int labcdm = a[0] + a[1] + a[2] + b[0] + b[1] + b[2] + c[0] + c[1] + c[2] + d[0] + d[1] + d[2] + m; 
@@ -909,7 +884,6 @@ void eri(int la, int lb, int lc, int ld, std::map<std::array<int, 13>, std::stri
     }
 }
 
-
 int main()
 {
     std::array<int, 3> a {0,1,1};
@@ -922,20 +896,24 @@ int main()
     // int m = 0;
     // auto name_str = namemap(a,b,c,d,1);
     // std::cout << name_str << std::endl;
-    int la = 6;
-    int lb = 0;
-    int lc = 6;
-    int ld = 0;
+
+    int la ;
+    std::cout << "Please enter an value for la: ";
+    std::cin >> la;
+    int lb ;
+    std::cout << "Please enter an value for lb: ";
+    std::cin >> lb;
+    int lc ;
+    std::cout << "Please enter an value for lc: ";
+    std::cin >> lc;
+    int ld ;
+    std::cout << "Please enter an value for ld: ";
+    std::cin >> ld;
     std::map<std::array<int, 13>, std::string> osmap;
     eri(la,lb,lc,ld,osmap);
     code_print(la , lb, lc, ld, osmap);
     save_int(la,lb,lc,ld);
     // obara_saika(a,b,c,d,m, osmap);
     // code_print(a, b, c, d, m, osmap);
-    //std::set<int> s = {};
-    //int num = 20;
-    //std::array<int, 3> b  {0,0,0};
-    //auto f = xyz_tran(b); 
-    //code_generator(num, s);
     return 0;
 }

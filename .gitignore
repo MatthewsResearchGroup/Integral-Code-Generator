@@ -1,4 +1,5 @@
+*.o
+*.swp
 /OS/*log
 /OS/vrrcg
 /OS/*.o
-
