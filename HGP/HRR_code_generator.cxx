@@ -15,10 +15,44 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
 
     if (b == s_orbital and d == s_orbital)
     {
+        int lla = (a[0]+a[1]+a[2]+1)*(a[0]+a[1]+a[2]+2)/2; 
+        int llb = (b[0]+b[1]+b[2]+1)*(b[0]+b[1]+b[2]+2)/2; 
+        int llc = (c[0]+c[1]+c[2]+1)*(c[0]+c[1]+c[2]+2)/2; 
+        int lld = (d[0]+d[1]+d[2]+1)*(d[0]+d[1]+d[2]+2)/2; 
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("I_[]");
+        s.append("I_");
+        s.append(orbname(a));
+        s.append(orbname(b));
+        s.append(orbname(c));
+        s.append(orbname(d));
+        s.append("[");
+        // cab + (ia+ib*lla+ic*lla*llb+id*lla*llb*llc)*nab + ccd*lla*llb*llc*lld*nab
         // s.append(std::to_string(m));
+        s.append("idx + (");
+        s.append(std::to_string(addrsear(a)));
+        s.append(" + ");
+        s.append(std::to_string(addrsear(b)));
+        s.append(" * ");
+        s.append(std::to_string(lla));
+        s.append(" + ");
+        s.append(std::to_string(addrsear(c)));
+        s.append(" * ");
+        s.append(std::to_string(lla));
+        s.append(" * ");
+        s.append(std::to_string(llb));
+        s.append(" + ");
+        s.append(std::to_string(addrsear(d)));
+        s.append(" * ");
+        s.append(std::to_string(lla));
+        s.append(" * ");
+        s.append(std::to_string(llb));
+        s.append(" * ");
+        s.append(std::to_string(llc));
+        s.append(") * nab");
+        s.append(" + idy *");
+        s.append(std::to_string(lla * llb * llc *lld));
+        s.append(" * nab");
         s.append("] ;\n");
         return s;
     }
@@ -32,11 +66,11 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         s.append(" = ");
         s.append(namemap(aplus1,bmins1,c,d,m));
         s.append(" + ");
-        s.append("p.AB[");
+        s.append("AB[");
         s.append(std::to_string(xyz));
-        s.append("]");
+        s.append("] * ");
         s.append(namemap(a,bmins1,c,d,m));
-        s.append("\n");
+        s.append(" ; \n");
     }
 
     else if (center == 'd')
@@ -48,11 +82,11 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         s.append(" = ");
         s.append(namemap(a,b,cplus1,dmins1,m));
         s.append(" + ");
-        s.append("p.CD[");
+        s.append("CD[");
         s.append(std::to_string(xyz));
-        s.append("]");
+        s.append("] * ");
         s.append(namemap(a,b,c,dmins1,m));
-        s.append("\n");
+        s.append(" ; \n");
     }
     return s;
 }
@@ -157,8 +191,41 @@ void hgp_eri(int la, int lb, int lc, int ld, std::map<std::array<int, 13>, std::
     }
 }
 
+std::string HrrFuncName(int la, int lb, int lc, int ld)
+{
+    std::string s;
+    s.append("KERNEL void hrr_");
+    s.append(orbname(std::array<int, 3> {la,0,0}));
+    s.append(orbname(std::array<int, 3> {lb,0,0}));
+    s.append(orbname(std::array<int, 3> {lc,0,0}));
+    s.append(orbname(std::array<int, 3> {ld,0,0}));
+    s.append("(shell_pairs_gpu& ab, shell_pairs_gpu& cd, int nab, double *I_, ");
+    for (auto l = la +lb; l >= la; l--)
+    for (auto r = lc +ld; r >= lc; r--)
+    {
+        s.append("double *I_");
+        s.append(orbname(std::array<int, 3> {l,0,0}));
+        s.append("s");
+        s.append(orbname(std::array<int, 3> {r,0,0}));
+        s.append("s");
+        s.append(", ");
+    }
+    s.append(")\n{");
+
+    return s;
+}
+
+
 void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, std::string>& osmap)
 {
+    std::cout << HrrFuncName(la,lb,lc,ld) << std::endl;
+    
+    std::cout << "    auto idx = threadIdx.x + blockDim.x * blockIdx.x; // idx for shell_pairs ab \n\
+    auto idy = threadIdx.y + blockDim.y * blockIdx.y; // idy for shell_pairs cd \n\n";
+    
+    std::cout << "    double AB[3] = \n    {\n        ab.AB[0][idx],\n        ab.AB[1][idx],\n        ab.AB[2][idx]\n    };\n";
+    std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idx],\n        cd.AB[1][idx],\n        cd.AB[2][idx]\n    };\n\n";
+
     for (auto na = la + lb; na >= la; na--)
     for (auto nb = 0; nb <= lb; nb++)
     for (auto nc = lc + ld; nc >= lc; nc--)
@@ -178,21 +245,35 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
                 std::cout << osmap.at(os_id);
         }
     }
+    save_int(la, lb, lc, ld);
+    std::cout << "}" << std::endl;
 }
+
 
 int main()
 {
-    std::array<int, 3> c = {3,0,0};
-    std::array<int, 3> d = {0,1,0};
-    std::array<int, 3> a = {4,0,0};
-    std::array<int, 3> b = {0,2,0};
+    std::array<int, 3> c = {1,2,0};
+    std::array<int, 3> d = {0,0,0};
+    std::array<int, 3> a = {1,0,0};
+    std::array<int, 3> b = {0,0,0};
+    // auto h = addrsear(c);
+    // printf("%d\n",h);
     // auto a_name = NewNameScheme(a);
     // std::cout << "a_name = " << a_name << std::endl;
     // auto hello = sent_gen(a,b,c,d,0,'d',1);
+    // std::cout << hello << std::endl;
 
+    int la = 1; 
+    int lb = 1; 
+    int lc = 1; 
+    int ld = 1; 
+
+    //auto funcname = HrrFuncName(la,lb,lc,ld);
+    //std::cout << funcname << std::endl;
     std::map<std::array<int, 13>, std::string> osmap;
-    hgp_eri(1, 1, 1, 1, osmap);
-    code_print(1, 1, 1, 1, osmap);
+    hgp_eri(la, lb, lc, ld, osmap);
+    code_print(la, lb, lc, ld, osmap);
+    // save_int(la, lb, lc, ld);
     // std::cout << hello << std::endl;
     // printf("Hello\n");
 }

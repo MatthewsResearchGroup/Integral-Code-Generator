@@ -1,7 +1,6 @@
 CXX=g++
 CXXFLAGS=-std=c++17 -I../common
 
-
 exe:=hrr
 src:=$(shell find . -iname "*cxx") $(shell find ../common -iname "*.cxx")
 objs:=$(addsuffix .o, $(basename $(src)))

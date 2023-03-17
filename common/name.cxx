@@ -107,9 +107,9 @@ char center_choose(int a, int b)
         return 'b';
     else if ( (a == 0) and (b != 0))
         return 'd';
-    else if (a <= b)
+    else if (a < b)
         return 'b';
-    else if (a > b)
+    else if (a >= b)
         return 'd';
 }
 
@@ -124,3 +124,86 @@ bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::ar
     else
         return true;
 }
+
+int addrsear(std::array<int, 3> a)
+{
+    int la = a[0] + a[1] + a[2];
+    int ia = 0;
+    for (auto ax = la; ax >= 0; ax--)
+    for (auto ay = la - ax; ay >= 0; ay--)
+    {
+        auto az = la - ax - ay;
+        if (a == std::array<int, 3> {ax, ay, az})
+            return ia;
+        ia++;
+    }
+}
+
+std::string orbname(const std::array<int, 3>& ang_mom)
+{
+    // return orbital name, like for (2,0,0) or (1,1,0), return d
+    std::string s;
+    int tot_ang = ang_mom[0] + ang_mom[1] + ang_mom[2];
+    if (tot_ang == 0)
+        s.append("s");
+    else if (tot_ang == 1)
+        s.append("p");
+    else if (tot_ang == 2)
+        s.append("d");
+    else if (tot_ang == 3)
+        s.append("f");
+    else if (tot_ang == 4)
+        s.append("g");
+    else if (tot_ang == 5)
+        s.append("h");
+    else if (tot_ang == 6)
+        s.append("i");
+    return s;
+}
+
+
+void save_int(int la, int lb, int lc, int ld)
+{
+    auto lla = (la+1)*(la+2)/2;
+    auto llb = (lb+1)*(lb+2)/2;
+    auto llc = (lc+1)*(lc+2)/2;
+    auto lld = (ld+1)*(ld+2)/2;
+    auto llabcd = lla*llb*llc*lld;
+    auto id = 0;
+    for (auto dx = ld; dx >= 0; dx--)
+    for (auto dy = ld-dx; dy >= 0; dy--)
+    {
+        auto dz = ld - dx - dy;
+        auto ic = 0 ;
+        for (auto cx = lc; cx >=0; cx-- )
+        for (auto cy = lc-cx; cy >=0; cy-- )
+        {
+            auto cz = lc - cx -cy;
+            auto ib = 0;
+            for (auto bx = lb; bx >=0; bx--)
+            for (auto by = lb-bx; by >=0; by--)
+            {
+                auto bz = lb - bx - by;
+                auto ia = 0;
+                for (auto ax = la; ax >=0; ax--)
+                for (auto ay = la-ax; ay >=0; ay--)
+                {
+                    // auto ia = 0;
+                    auto az = la - ax - ay;
+                    std::array<int, 3> axyz = {ax,ay,az};
+                    std::array<int, 3> bxyz = {bx,by,bz};
+                    std::array<int, 3> cxyz = {cx,cy,cz};
+                    std::array<int, 3> dxyz = {dx,dy,dz};
+                    // cab + (ia+ib*lla+ic*lla*llb+id*lla*llb*llc)*nab + ccd*lla*llb*llc*lld*nab
+                    printf("    I_[idx + (%d + %d * %d + %d * %d * %d + %d * %d * %d * %d) * nab + idy * nab * %d]", ia, ib, lla, ic, lla, llb, id, lla, llb, llc, llabcd);
+                    std::cout << " += " << namemap(axyz,bxyz,cxyz,dxyz,0) << " ;"<< std::endl;
+                    ia++;
+                }
+                ib++;
+            }
+            ic++;
+        }
+        id++;
+    }
+}
+

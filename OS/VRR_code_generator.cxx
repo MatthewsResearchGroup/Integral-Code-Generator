@@ -850,6 +850,7 @@ void save_int(int la, int lb, int lc, int ld)
     }
 }
 
+
 void eri(int la, int lb, int lc, int ld, std::map<std::array<int, 13>, std::string>& osmap)
 {
     // auto id = 0;
