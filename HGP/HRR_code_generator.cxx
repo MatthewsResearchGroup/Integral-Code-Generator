@@ -199,16 +199,16 @@ std::string HrrFuncName(int la, int lb, int lc, int ld)
     s.append(orbname(std::array<int, 3> {lb,0,0}));
     s.append(orbname(std::array<int, 3> {lc,0,0}));
     s.append(orbname(std::array<int, 3> {ld,0,0}));
-    s.append("(shell_pairs_gpu& ab, shell_pairs_gpu& cd, int nab, double *I_, ");
+    s.append("(shell_pairs_gpu ab, shell_pairs_gpu cd,  double* I_ ");
     for (auto l = la +lb; l >= la; l--)
     for (auto r = lc +ld; r >= lc; r--)
     {
-        s.append("double *I_");
+        s.append(", double* I_");
         s.append(orbname(std::array<int, 3> {l,0,0}));
         s.append("s");
         s.append(orbname(std::array<int, 3> {r,0,0}));
         s.append("s");
-        s.append(", ");
+        // s.append(", ");
     }
     s.append(")\n{");
 
@@ -223,6 +223,10 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
     std::cout << "    auto idx = threadIdx.x + blockDim.x * blockIdx.x; // idx for shell_pairs ab \n\
     auto idy = threadIdx.y + blockDim.y * blockIdx.y; // idy for shell_pairs cd \n\n";
     
+    std::cout << "    auto nab = ab.na * ab.nb; //  sizeof(ab.S)/sizeof(ab.S[0]);\n";
+    std::cout << "    auto ncd = cd.na * cd.nb; //  sizeof(cd.S)/sizeof(cd.S[0]);\n\n";
+    std::cout << "    if (idx < nab  and idy < ncd)\n    {\n";
+
     std::cout << "    double AB[3] = \n    {\n        ab.AB[0][idx],\n        ab.AB[1][idx],\n        ab.AB[2][idx]\n    };\n";
     std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idx],\n        cd.AB[1][idx],\n        cd.AB[2][idx]\n    };\n\n";
 
@@ -246,7 +250,7 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
         }
     }
     save_int(la, lb, lc, ld);
-    std::cout << "}" << std::endl;
+    std::cout << "    }\n}" << std::endl;
 }
 
 
@@ -263,10 +267,10 @@ int main()
     // auto hello = sent_gen(a,b,c,d,0,'d',1);
     // std::cout << hello << std::endl;
 
-    int la = 1; 
+    int la = 2; 
     int lb = 1; 
-    int lc = 1; 
-    int ld = 1; 
+    int lc = 0; 
+    int ld = 0; 
 
     //auto funcname = HrrFuncName(la,lb,lc,ld);
     //std::cout << funcname << std::endl;
