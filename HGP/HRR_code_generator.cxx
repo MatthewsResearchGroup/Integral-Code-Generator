@@ -253,6 +253,103 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
     std::cout << "    }\n}" << std::endl;
 }
 
+void hrr_host(int la, int lb, int lc, int ld)
+{
+    // print the host function for hrr
+    std::string intename;
+    intename.append(orbname(std::array<int, 3> {la,0,0}));
+    intename.append(orbname(std::array<int, 3> {lb,0,0}));
+    intename.append(orbname(std::array<int, 3> {lc,0,0}));
+    intename.append(orbname(std::array<int, 3> {ld,0,0}));
+    std::cout << "__host__ void " << intename << "(const shell_pairs ab, const shell_pairs cd)" << std::endl;
+    std::cout << "{" << std::endl;
+    std::cout << "    int lgab = ab.S.size(); // length of ab" << std::endl;
+    std::cout << "    int lgcd = cd.S.size(); // length of cd\n" << std::endl;
+
+    std::cout << "    shell_pairs_gpu ab_d (ab);" << std::endl;
+    std::cout << "    shell_pairs_gpu cd_d (cd);" << std::endl;
+
+    std::cout << "    int block_size = 16;" << std::endl;
+    std::cout << "    dim3 block_dim(block_size, block_size);" << std::endl;
+    std::cout << "    dim3 grid_dim((((lgab-1)/block_size)+1), (((lgcd-1)/block_size)+1));" << std::endl;
+    
+    for (auto l = la +lb; l >= la; l--)
+    for (auto r = lc +ld; r >= lc; r--)
+    {
+        std::string s;
+        std::string name;
+        s.append("\n    // ");
+        name.append(orbname(std::array<int, 3> {l,0,0}));
+        name.append("s");
+        name.append(orbname(std::array<int, 3> {r,0,0}));
+        name.append("s");
+        s.append(name);
+        s.append(" integral\n");
+        s.append("    auto llabcd_");
+        s.append(name);
+        s.append(" = ");
+        s.append(std::to_string((l+1)*(l+2)/2*1*1*(r+1)*(r+2)/2));
+        s.append(" ;\n");
+        s.append("    auto lintegral_");
+        s.append(name);
+        s.append(" = llabcd_");
+        s.append(name);
+        s.append(" * lgab * lgcd;\n\n");
+        s.append("    // allocate memory for gpu");
+        s.append("    double *I_");
+        s.append(name);
+        s.append("_d\n");
+        s.append("    cudaMalloc((void**) &I_");
+        s.append(name);
+        s.append("_d, lintegral_");
+        s.append(name);
+        s.append(" * sizeof(double));\n");
+        s.append("    vrr_con_");
+        s.append(name);
+        s.append("<<<grid_dim,block_dim>>>(ab_d, cd_d, I_");
+        s.append(name);
+        s.append("_d);");
+        std::cout << s << std::endl;
+    }
+    std::cout << "    // HRR for " << intename << std::endl;
+    std::cout << "    auto llabcd_" << intename << " = " << (la+1)*(la+2)*(lb+1)*(lb+2)*(lc+1)*(lc+2)*(ld+1)*(ld+2)/16 << ";"<< std::endl;
+    std::cout << "    auto lintegral_" << intename << " = llabcd_" << intename << " * lgab * lgcd;\n" << std::endl;
+    std::cout << "    // allocate memory for gpu" << std::endl;
+    std::cout << "    double *I_" << intename << "_d;"<< std::endl;
+    std::cout << "    cudaMalloc((void**) &I_" << intename << "_d, lintegral_" << intename << " * sizeof(double));" << std::endl;
+    std::cout << "    // pinned memory" << std::endl;
+    std::cout << "    double *I_" << intename << "_h;" << std::endl;
+    std::cout << "    cudaHostAlloc((void**) &I_" << intename << "_h, lintegral_" << intename << " * sizeof(double), cudaHostAllocDefault);" << std::endl;
+    std::cout << "    hrr_" << intename << "<<<grid_dim,block_dim>>>(ab_d, cd_d, I_" << intename << "_d,";
+    for (auto l = la +lb; l >= la; l--)
+    for (auto r = lc +ld; r >= lc; r--)
+    {
+        std::string intermediate_name;
+        intermediate_name.append(orbname(std::array<int, 3> {l,0,0}));
+        intermediate_name.append("s");
+        intermediate_name.append(orbname(std::array<int, 3> {r,0,0}));
+        intermediate_name.append("s");
+        std::cout << " I_" << intermediate_name << "_d,";
+    }
+    std::cout << "\n\n    cudaDeviceSynchronize();\n" << std::endl;
+    std::cout << "    // copy data back" << std::endl;
+    std::cout << "    cudaMemcpy(I_" << intename << "_h, I_" << intename << "_d, lintegral_" << intename << " * sizeof(double),  cudaMemcpyDeviceToHost);" << std::endl;
+    std::cout << "    // free gpu memory" << std::endl;
+    for (auto l = la +lb; l >= la; l--)
+    for (auto r = lc +ld; r >= lc; r--)
+    {
+        std::string intermediate_name;
+        intermediate_name.append(orbname(std::array<int, 3> {l,0,0}));
+        intermediate_name.append("s");
+        intermediate_name.append(orbname(std::array<int, 3> {r,0,0}));
+        intermediate_name.append("s");
+        std::cout << "    cudaFree(I_" << intermediate_name << "_d);" << std::endl;
+    }
+    std::cout << "    cudaFree(I_" << intename << "_d);" << std::endl;
+    std::cout << "    cudaFreeHost(I_" << intename << "_h);" << std::endl;
+    std::cout << "}" << std::endl;
+}
+
 
 int main()
 {
@@ -274,9 +371,10 @@ int main()
 
     //auto funcname = HrrFuncName(la,lb,lc,ld);
     //std::cout << funcname << std::endl;
-    std::map<std::array<int, 13>, std::string> osmap;
-    hgp_eri(la, lb, lc, ld, osmap);
-    code_print(la, lb, lc, ld, osmap);
+    // std::map<std::array<int, 13>, std::string> osmap;
+    // hgp_eri(la, lb, lc, ld, osmap);
+    // code_print(la, lb, lc, ld, osmap);
+    hrr_host(la,  lb, lc, ld);
     // save_int(la, lb, lc, ld);
     // std::cout << hello << std::endl;
     // printf("Hello\n");

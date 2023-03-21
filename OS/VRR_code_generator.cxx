@@ -898,18 +898,10 @@ int main()
     // auto name_str = namemap(a,b,c,d,1);
     // std::cout << name_str << std::endl;
 
-    int la ;
-    std::cout << "Please enter an value for la: ";
-    std::cin >> la;
-    int lb ;
-    std::cout << "Please enter an value for lb: ";
-    std::cin >> lb;
-    int lc ;
-    std::cout << "Please enter an value for lc: ";
-    std::cin >> lc;
-    int ld ;
-    std::cout << "Please enter an value for ld: ";
-    std::cin >> ld;
+    int la = 2 ;
+    int lb = 1 ;
+    int lc = 0 ;
+    int ld = 0 ;
     std::map<std::array<int, 13>, std::string> osmap;
     eri(la,lb,lc,ld,osmap);
     code_print(la , lb, lc, ld, osmap);

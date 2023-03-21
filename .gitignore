@@ -3,5 +3,4 @@
 *.log
 /OS/*log
 /OS/vrrcg
-/OS/*.o
 /HGP/hrr
