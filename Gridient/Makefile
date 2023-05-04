@@ -1,8 +1,8 @@
 CXX=g++
-CXXFLAGS=-std=c++17 -I../common -I../OS
+CXXFLAGS=-std=c++17 -I../common -I../OS -I../HGP
 
-exe:=hrr
-src:=$(shell find . -iname "*cxx") $(shell find ../common -iname "*.cxx") $(shell find ../OS -iname "*.cxx")
+exe:=dhrr
+src:=$(shell find . -iname "*cxx") $(shell find ../common -iname "*.cxx") $(shell find ../OS -iname "*.cxx") $(shell find ../HGP -iname "*.cxx")
 objs:=$(addsuffix .o, $(basename $(src)))
 deps:=$(join $(addsuffix .deps/,$(dir $(objs))),$(notdir $(objs:.o=.d)))
 

@@ -130,7 +130,7 @@ std::string xyz_tran(const std::array<int, 3>& ang_mom)
 }
 #endif
 
-std::string NewNameScheme(const std::array<int, 3>& ang_mom)
+static std::string NewNameScheme(const std::array<int, 3>& ang_mom)
 {
     // return orbital name, like for d(2,0,0), return d200
     std::string s;
@@ -156,7 +156,7 @@ std::string NewNameScheme(const std::array<int, 3>& ang_mom)
     return s;
 }
 
-int dirchoose(const std::array<int, 3> a)
+static int dirchoose(const std::array<int, 3> a)
 {
     int xyz = 0;
     int minx = INT_MAX;
@@ -171,7 +171,7 @@ int dirchoose(const std::array<int, 3> a)
     return xyz;
 }
 
-std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m)
+static std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m)
 {
     // auto stra = xyz_tran(a);
     // auto strb = xyz_tran(b);
@@ -194,7 +194,7 @@ std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const
     }
 }
 
-char center_decrease(std::array<int, 4> angmom)
+static char center_decrease(std::array<int, 4> angmom)
 {// Array, the total momentum for four centers.
     auto num_centers = 4; 
     auto total_ang = 0; 
@@ -226,7 +226,7 @@ char center_decrease(std::array<int, 4> angmom)
     } // return the center having the lowest anglar momentum
 }
  
-bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::array<int,3>& c, const std::array<int,3>& d) // integral exists or not
+static bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::array<int,3>& c, const std::array<int,3>& d) // integral exists or not
 {
     if (a[0] < 0 || a[1] < 0 || a[2] < 0 || \
         b[0] < 0 || b[1] < 0 || b[2] < 0 || \
@@ -238,7 +238,7 @@ bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::ar
         return true;
 }
 
-std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m, char center, int xyz)
+static std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m, char center, int xyz)
 {
     auto amins1 = a;
     auto amins2 = a;  
@@ -250,13 +250,13 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     auto dmins2 = d;
     
     std::string s;
-    s.append("    double ");
+    s.append("        auto ");
     std::array<int,3> s_orbital {0,0,0};
     if (a == s_orbital and b == s_orbital and c == s_orbital and d == s_orbital)
     {
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("p.fm[");
+        s.append("fm[");
         s.append(std::to_string(m));
         s.append("] ;\n");
         return s;
@@ -273,24 +273,24 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("p.PA[");
+        s.append("PA[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(amins1,b,c,d,m));
         s.append(" + ");
-        s.append("p.WP[");
+        s.append("WP[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(amins1,b,c,d,m+1));
         if (intex(amins2, b, c, d))
         {
             s.append(" + ");
-            s.append("0.5 * p.zab_inv * ");
+            s.append("0.5 * zab_inv * ");
             s.append(std::to_string(amins1[xyz]));
             s.append(" * ");
             s.append(namemap(amins2, b, c, d, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zab_inv * 0.5 * p.zab_inv * ");
+            s.append("(- rho) * zab_inv * 0.5 * zab_inv * ");
             s.append(std::to_string(amins1[xyz]));
             s.append(" * ");
             s.append(namemap(amins2, b, c, d, m+1));
@@ -298,12 +298,12 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         if (intex(amins1, bmins1, c, d))
         {
             s.append(" + ");
-            s.append("0.5 * p.zab_inv * ");
+            s.append("0.5 * zab_inv * ");
             s.append(std::to_string(b[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, bmins1, c, d, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zab_inv * 0.5 * p.zab_inv * ");
+            s.append("(- rho) * zab_inv * 0.5 * zab_inv * ");
             s.append(std::to_string(b[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, bmins1, c, d, m+1));
@@ -314,7 +314,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             // s.append(" 0.0 * ");
             // s.append(namemap(amins1, b, cmins1, d, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(c[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, cmins1, d, m+1));
@@ -325,7 +325,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             // s.append(" 0.0 * ");
             // s.append(namemap(amins1, b, c, dmins1, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(d[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, c, dmins1, m+1));
@@ -345,24 +345,24 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("p.PB[");
+        s.append("PB[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,bmins1,c,d,m));
         s.append(" + ");
-        s.append("p.WP[");
+        s.append("WP[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,bmins1,c,d,m+1));
         if (intex(a, bmins2, c, d))
         {
             s.append(" + ");
-            s.append("0.5 * p.zab_inv * ");
+            s.append("0.5 * zab_inv * ");
             s.append(std::to_string(bmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, bmins2, c, d, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zab_inv * 0.5 * p.zab_inv * ");
+            s.append("(- rho) * zab_inv * 0.5 * zab_inv * ");
             s.append(std::to_string(bmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, bmins2, c, d, m+1));
@@ -370,12 +370,12 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         if (intex(amins1, bmins1, c, d))
         {
             s.append(" + ");
-            s.append("0.5 * p.zab_inv * ");
+            s.append("0.5 * zab_inv * ");
             s.append(std::to_string(a[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, bmins1, c, d, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zab_inv * 0.5 * p.zab_inv * ");
+            s.append("(- rho) * zab_inv * 0.5 * zab_inv * ");
             s.append(std::to_string(a[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, bmins1, c, d, m+1));
@@ -386,7 +386,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(a, b, cmins1, d, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(c[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, cmins1, d, m+1));
@@ -397,7 +397,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(amins1, b, c, dmins1, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(d[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, c, dmins1, m+1));
@@ -415,24 +415,24 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("p.QC[");
+        s.append("QC[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,b,cmins1,d,m));
         s.append(" + ");
-        s.append("p.WQ[");
+        s.append("WQ[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,b,cmins1,d,m+1));
         if (intex(a, b, cmins2, d))
         {
             s.append(" + ");
-            s.append("0.5 * p.zcd_inv * ");
+            s.append("0.5 * zcd_inv * ");
             s.append(std::to_string(cmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins2, d, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zcd_inv * 0.5 * p.zcd_inv * ");
+            s.append("(- rho) * zcd_inv * 0.5 * zcd_inv * ");
             s.append(std::to_string(cmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins2, d, m+1));
@@ -440,12 +440,12 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         if (intex(a, b, cmins1, dmins1))
         {
             s.append(" + ");
-            s.append("0.5 * p.zcd_inv * ");
+            s.append("0.5 * zcd_inv * ");
             s.append(std::to_string(d[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins1, dmins1, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zcd_inv * 0.5 * p.zcd_inv * ");
+            s.append("(- rho) * zcd_inv * 0.5 * zcd_inv * ");
             s.append(std::to_string(d[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins1, dmins1, m+1));
@@ -456,7 +456,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(amins1, b, cmins1, d, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(a[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, cmins1, d, m+1));
@@ -467,7 +467,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(a, bmins1, cmins1, d, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(b[xyz]));
             s.append(" * ");
             s.append(namemap(a, bmins1, cmins1, d, m+1));
@@ -485,24 +485,24 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
     
         s.append(namemap(a,b,c,d,m));
         s.append(" = ");
-        s.append("p.QD[");
+        s.append("QD[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,b,c,dmins1,m));
         s.append(" + ");
-        s.append("p.WQ[");
+        s.append("WQ[");
         s.append(std::to_string(xyz));
         s.append("] * ");
         s.append(namemap(a,b,c,dmins1,m+1));
         if (intex(a, b, c, dmins2))
         {
             s.append(" + ");
-            s.append("0.5 * p.zcd_inv * ");
+            s.append("0.5 * zcd_inv * ");
             s.append(std::to_string(dmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, c, dmins2, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zcd_inv * 0.5 * p.zcd_inv * ");
+            s.append("(- rho) * zcd_inv * 0.5 * zcd_inv * ");
             s.append(std::to_string(dmins1[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, c, dmins2, m+1));
@@ -510,12 +510,12 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         if (intex(a, b, cmins1, dmins1))
         {
             s.append(" + ");
-            s.append("0.5 * p.zcd_inv * ");
+            s.append("0.5 * zcd_inv * ");
             s.append(std::to_string(c[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins1, dmins1, m));
             s.append(" + ");
-            s.append("(- p.rho) * p.zcd_inv * 0.5 * p.zcd_inv * ");
+            s.append("(- rho) * zcd_inv * 0.5 * zcd_inv * ");
             s.append(std::to_string(c[xyz]));
             s.append(" * ");
             s.append(namemap(a, b, cmins1, dmins1, m+1));
@@ -526,7 +526,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(amins1, b, c, dmins1, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(a[xyz]));
             s.append(" * ");
             s.append(namemap(amins1, b, c, dmins1, m+1));
@@ -537,7 +537,7 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
             s.append(" 0.0 * ");
             s.append(namemap(a, bmins1, c, dmins1, m));
             s.append(" + ");
-            s.append("0.5 * p.zabcd_inv * ");
+            s.append("0.5 * zabcd_inv * ");
             s.append(std::to_string(b[xyz]));
             s.append(" * ");
             s.append(namemap(a, bmins1, c, dmins1, m+1));
@@ -748,7 +748,7 @@ void obara_saika(const std::array<int, 3>& a, const std::array<int, 3>& b,const 
              
 }
 
-void code_print(std::array<int, 3>& a , std::array<int, 3>& b, std::array<int, 3>& c, std::array<int, 3>& d, int m, std::map<std::array<int, 13>, std::string>& osmap)
+static void code_print(std::array<int, 3>& a , std::array<int, 3>& b, std::array<int, 3>& c, std::array<int, 3>& d, int m, std::map<std::array<int, 13>, std::string>& osmap)
 {
     int labcdm = a[0] + a[1] + a[2] + b[0] + b[1] + b[2] + c[0] + c[1] + c[2] + d[0] + d[1] + d[2] + m; 
     for (auto ax = 0; ax <= a[0]; ax++)
@@ -772,7 +772,7 @@ void code_print(std::array<int, 3>& a , std::array<int, 3>& b, std::array<int, 3
 }
 
 
-void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, std::string>& osmap)
+void vrr_code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, std::string>& osmap)
 {
     // int labcdm = a[0] + a[1] + a[2] + b[0] + b[1] + b[2] + c[0] + c[1] + c[2] + d[0] + d[1] + d[2]; 
     int labcdm = la + lb + lc + ld;
@@ -805,7 +805,7 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
     }
 }
 
-void save_int(int la, int lb, int lc, int ld)
+static void save_int(int la, int lb, int lc, int ld)
 {
     auto lla = (la+1)*(la+2)/2;
     auto llb = (lb+1)*(lb+2)/2;
@@ -885,6 +885,7 @@ void eri(int la, int lb, int lc, int ld, std::map<std::array<int, 13>, std::stri
     }
 }
 
+#if 0
 int main()
 {
     std::array<int, 3> a {0,1,1};
@@ -910,3 +911,4 @@ int main()
     // code_print(a, b, c, d, m, osmap);
     return 0;
 }
+#endif

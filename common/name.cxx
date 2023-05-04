@@ -1,6 +1,25 @@
 #include <string>
 #include <iostream>
 #include "name.h"
+#include <cmath>
+#include <iomanip>
+static int double_polynomial(std::array<int, 12> arr)
+{
+    int res = 1;
+    for (int i = 0; i < 12; i++)
+    {   
+        if (arr[i] == 0)
+            res *= 1;
+        else if (arr[i] > 0)
+        {   
+            for (int j = 2*arr[i] - 1; j >= 1; j-=2)
+            {   
+                res *= j;
+            }   
+        }   
+    }   
+    return res;
+}
 
 std::string NewNameScheme(const std::array<int, 3>& ang_mom)
 {
@@ -196,7 +215,17 @@ void save_int(int la, int lb, int lc, int ld)
                     std::array<int, 3> dxyz = {dx,dy,dz};
                     // cab + (ia+ib*lla+ic*lla*llb+id*lla*llb*llc)*nab + ccd*lla*llb*llc*lld*nab
                     printf("    I_[idx + (%d + %d * %d + %d * %d * %d + %d * %d * %d * %d) * nab + idy * nab * %d]", ia, ib, lla, ic, lla, llb, id, lla, llb, llc, llabcd);
-                    std::cout << " += " << namemap(axyz,bxyz,cxyz,dxyz,0) << " ;"<< std::endl;
+                    std::cout << " = "; 
+                    if (la <= 1 and lb <= 1 and lc <= 1 and ld <= 1)
+                        std::cout << std::setw(20) << std::right <<"1 * " ;
+                    else 
+                    {   
+                        std::array<int, 12> arr = {ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy,dz};
+                        auto res =  double_polynomial(arr);
+                        std::cout.precision(17);
+                        std::cout << std::setw(20) << std::right  <<  1/sqrt(res) << " * " ;
+                    }
+                    std::cout << namemap(axyz,bxyz,cxyz,dxyz,0) << "_con ;"<< std::endl;
                     ia++;
                 }
                 ib++;
