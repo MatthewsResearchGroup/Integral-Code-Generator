@@ -382,7 +382,7 @@ void save_deri(int la, int lb, int lc, int ld, int deri_center)
     for (auto ixyz = 0; ixyz < xyz; ixyz++)
     {
         auto id = 0;
-        printf("ld = %d\n", ld);
+        // printf("ld = %d\n", ld);
         for (auto dx = ld; dx >= 0; dx--)
         for (auto dy = ld-dx; dy >= 0; dy--)
         {
@@ -419,8 +419,8 @@ void save_deri(int la, int lb, int lc, int ld, int deri_center)
                 ic++;
             }
             id++;
-            printf("id = %d\n ", id);
-            printf("dx, dy, dz = %d, %d, %d\n ", dx, dy, dz);
+            // printf("id = %d\n ", id);
+            // printf("dx, dy, dz = %d, %d, %d\n ", dx, dy, dz);
         }
     }
     std::cout << "    }" << std::endl;
@@ -579,10 +579,10 @@ void d_code_print(int la, int lb, int lc, int ld,
         auto T = rho * ((P[0]-Q[0])*(P[0]-Q[0]) + (P[1]-Q[1])*(P[1]-Q[1]) + (P[2]-Q[2])*(P[2]-Q[2]));\n\
         auto K = zabcd_inv_sqrt * (ab.K[iab]) * cd.K[icd]; \n\
         \n\    
-        double fm[" << la+lb+lc+ld+1 << "]; \n\
-        vgamma<double>(" << la+lb+lc+ld << ", T, fm);\n\
+        double fm[" << la+lb+lc+ld+2 << "]; \n\
+        vgamma<double>(" << la+lb+lc+ld+1 << ", T, fm);\n\
         \n\
-        for (auto i = 0; i <" << la+lb+lc+ld+1 << 
+        for (auto i = 0; i < " << la+lb+lc+ld+2 << 
         " ; i++) \n\            fm[i] *= K;\n" << std::endl;
         vrr_code_print(la+lb+1,0,lc+ld,0,os_map);
     // print vrr (os map )
