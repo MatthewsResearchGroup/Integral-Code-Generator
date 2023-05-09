@@ -1,5 +1,6 @@
 #include <map>
 #include <array>
+#include <vector>
 #include <string>
 #include "name.h"
 #include <iostream>
@@ -20,6 +21,8 @@ std::string sent_gen(const std::array<int, 3> a, const std::array<int, 3> b,cons
         string_deri_center = "beta";
     else if (deri_center == 2)
         string_deri_center = "gamma";
+    else if (deri_center == 3)
+        string_deri_center = "delta";
 
     std::string s;
     s.append("    auto ");
@@ -125,7 +128,7 @@ void hgp(const std::array<int, 3>& a, const std::array<int, 3>& b,const std::arr
         bmins1[xyz] = b[xyz] - 1;
 
         auto sen = sent_gen(a,b,c,d,m,center,xyz, deri_center);
-        std::cout << sen ;
+        // std::cout << sen ;
 
         if (osmap.count(os_id) == 0)
         {
@@ -141,7 +144,7 @@ void hgp(const std::array<int, 3>& a, const std::array<int, 3>& b,const std::arr
         dmins1[xyz] = d[xyz] - 1;
 
         auto sen = sent_gen(a,b,c,d,m,center,xyz,deri_center);
-        std::cout << sen ;
+        // std::cout << sen ;
 
         if (osmap.count(os_id) == 0)
         {
@@ -193,10 +196,118 @@ std::string deri_sen(std::array<int, 3 > a, std::array<int, 3 > b, std::array<in
         s.append(" ;\n");
     }
     // std::cout << s << std::endl;
+    else if (center == 'B')
+    {
+        auto bplus1 = b;
+        auto bmins1 = b;
+        bplus1[xyz] = b[xyz] + 1;
+        bmins1[xyz] = b[xyz] - 1;
+        s.append("    auto d_B");
+        s.append(std::to_string(xyz));
+        s.append("_");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(b));
+        s.append(NewNameScheme(c));
+        s.append(NewNameScheme(d));
+        s.append("0_");
+        s.append("con");
+        s.append(" = ");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(bplus1));
+        s.append(NewNameScheme(c));
+        s.append(NewNameScheme(d));
+        s.append("0_");
+        s.append("beta_con");
+        if (intex(a, bmins1, c, d))
+        {
+            s.append(" - ");
+            s.append(std::to_string(b[xyz]));
+            s.append(" * ");
+            s.append(NewNameScheme(a));
+            s.append(NewNameScheme(bmins1));
+            s.append(NewNameScheme(c));
+            s.append(NewNameScheme(d));
+            s.append("0_");
+            s.append("con");
+        }
+        s.append(" ;\n");
+    }
+    else if(center == 'C')
+    {
+        auto cplus1 = c;
+        auto cmins1 = c;
+        cplus1[xyz] = c[xyz] + 1;
+        cmins1[xyz] = c[xyz] - 1;
+        s.append("    auto d_C");
+        s.append(std::to_string(xyz));
+        s.append("_");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(b));
+        s.append(NewNameScheme(c));
+        s.append(NewNameScheme(d));
+        s.append("0_");
+        s.append("con");
+        s.append(" = ");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(b));
+        s.append(NewNameScheme(cplus1));
+        s.append(NewNameScheme(d));
+        s.append("0_");
+        s.append("gamma_con");
+        if (intex(a, b, cmins1, d))
+        {
+            s.append(" - ");
+            s.append(std::to_string(c[xyz]));
+            s.append(" * ");
+            s.append(NewNameScheme(a));
+            s.append(NewNameScheme(b));
+            s.append(NewNameScheme(cmins1));
+            s.append(NewNameScheme(d));
+            s.append("0_");
+            s.append("con");
+        }
+        s.append(" ;\n");
+    }
+    else if (center == 'D')
+    {
+        auto dplus1 = d;
+        auto dmins1 = d;
+        dplus1[xyz] = d[xyz] + 1;
+        dmins1[xyz] = d[xyz] - 1;
+        s.append("    auto d_D");
+        s.append(std::to_string(xyz));
+        s.append("_");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(b));
+        s.append(NewNameScheme(c));
+        s.append(NewNameScheme(d));
+        s.append("0_");
+        s.append("con");
+        s.append(" = ");
+        s.append(NewNameScheme(a));
+        s.append(NewNameScheme(b));
+        s.append(NewNameScheme(c));
+        s.append(NewNameScheme(dplus1));
+        s.append("0_");
+        s.append("delta_con");
+        if (intex(a, b, c, dmins1))
+        {
+            s.append(" - ");
+            s.append(std::to_string(d[xyz]));
+            s.append(" * ");
+            s.append(NewNameScheme(a));
+            s.append(NewNameScheme(b));
+            s.append(NewNameScheme(c));
+            s.append(NewNameScheme(dmins1));
+            s.append("0_");
+            s.append("con");
+        }
+        s.append(" ;\n");
+    }
     return s;
 }
 
-void deri_rr(std::array<int, 3 > a, std::array<int, 3 > b, std::array<int, 3 > c, std::array<int, 3 > d, int deri_center, int xyz, std::map<std::array<int, 14>, std::string>& scaled_map, std::map<std::array<int, 13>, std::string>& normal_map, std::map<std::array<int, 13>, std::string>& deri_map)
+void deri_rr(std::array<int, 3 > a, std::array<int, 3 > b, std::array<int, 3 > c, std::array<int, 3 > d, int deri_center, int xyz, std::map<std::array<int, 14>, std::string>& scaled_map, std::map<std::array<int, 13>, std::string>& normal_map, std::map<std::array<int, 14>, std::string>& deri_map)
 {
 
     auto aplus1 = a;
@@ -213,12 +324,62 @@ void deri_rr(std::array<int, 3 > a, std::array<int, 3 > b, std::array<int, 3 > c
         aplus1[xyz] = a[xyz] + 1;
         amins1[xyz] = a[xyz] - 1;
         auto sen = deri_sen(a,  b,  c,  d, 'A', xyz);
-        hgp(aplus1, b, c, d, 0, scaled_map, 0);
+        hgp(aplus1, b, c, d, 0, scaled_map, deri_center);
         if (intex(amins1, b, c, d))
         {
             hgp(amins1, b, c, d, 0, normal_map);
         }
-        std::array<int, 13> deri_id = {a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2], xyz};
+        std::array<int, 14> deri_id = {a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2], xyz, deri_center};
+        if (deri_map.count(deri_id) == 0 )
+        {
+            deri_map.insert({deri_id, sen});
+        }
+    }
+
+    else if (deri_center == 1)
+    {
+        bplus1[xyz] = b[xyz] + 1;
+        bmins1[xyz] = b[xyz] - 1;
+        auto sen = deri_sen(a,  b,  c,  d, 'B', xyz);
+        hgp(a, bplus1, c, d, 0, scaled_map, deri_center);
+        if (intex(a, bmins1, c, d))
+        {
+            hgp(a, bmins1, c, d, 0, normal_map);
+        }
+        std::array<int, 14> deri_id = {a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2], xyz, deri_center};
+        if (deri_map.count(deri_id) == 0 )
+        {
+            deri_map.insert({deri_id, sen});
+        }
+    }
+
+    else if (deri_center == 2)
+    {
+        cplus1[xyz] = c[xyz] + 1;
+        cmins1[xyz] = c[xyz] - 1;
+        auto sen = deri_sen(a,  b,  c,  d, 'C', xyz);
+        hgp(a, b, cplus1, d, 0, scaled_map, deri_center);
+        if (intex(a, b, cmins1, d))
+        {
+            hgp(a, b, cmins1, d, 0, normal_map);
+        }
+        std::array<int, 14> deri_id = {a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2], xyz, deri_center};
+        if (deri_map.count(deri_id) == 0 )
+        {
+            deri_map.insert({deri_id, sen});
+        }
+    }
+    else if (deri_center == 3)
+    {
+        dplus1[xyz] = d[xyz] + 1;
+        dmins1[xyz] = d[xyz] - 1;
+        auto sen = deri_sen(a,  b,  c,  d, 'D', xyz);
+        hgp(a, b, c, dplus1, 0, scaled_map, deri_center);
+        if (intex(a, b, c, dmins1))
+        {
+            hgp(a, b, c, dmins1, 0, normal_map);
+        }
+        std::array<int, 14> deri_id = {a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2], d[0], d[1], d[2], xyz, deri_center};
         if (deri_map.count(deri_id) == 0 )
         {
             deri_map.insert({deri_id, sen});
@@ -226,9 +387,9 @@ void deri_rr(std::array<int, 3 > a, std::array<int, 3 > b, std::array<int, 3 > c
     }
 }
 
-void hrr_code_print(int la, int lb, int lc, int ld,std::map<std::array<int, 14>, std::string>& map)
+void hrr_code_print(int la, int lb, int lc, int ld, int deri_center, std::map<std::array<int, 14>, std::string>& map)
 {
-    int deri_center = 0; // 0 means A center. 
+    // int deri_center = 0; // 0 means A center. 
     for (auto na = la + lb; na >= la; na--)
     for (auto nb = 0; nb <= lb; nb++)
     for (auto nc = lc + ld; nc >= lc; nc--)
@@ -245,7 +406,7 @@ void hrr_code_print(int la, int lb, int lc, int ld,std::map<std::array<int, 14>,
         {   
             if (bx != 0 or by != 0 or nb-bx-by != 0 or dx != 0 or dy != 0 or nd-dx-dy != 0 ) 
             {   
-            std::array<int, 14> os_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, 0};
+            std::array<int, 14> os_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, deri_center};
             if (map.count(os_id) != 0)
                 std::cout << map.at(os_id);
             }   
@@ -317,13 +478,16 @@ static void vrr(std::map<std::array<int, 14>, std::string>& hrr_scaled_map,
 }
 
 
-void di_hrr(int la, int lb, int lc, int ld, int deri_center,
+void di_hrr(int la, int lb, int lc, int ld, std::vector<int>& deri_center_list,
             std::map<std::array<int, 14>, std::string>& scaled_map,
             std::map<std::array<int, 13>, std::string>& normal_map,
             std::map<std::array<int, 13>, std::string>& os_map,
-            std::map<std::array<int, 13>, std::string>& deri_map)
+            std::map<std::array<int, 14>, std::string>& deri_map)
 {
-    if (deri_center == 0)
+    // if (deri_center == 0)
+    for (auto deri_center : deri_center_list)
+    {      
+        printf("Here is Center: %d", deri_center);
     {
         for (auto ax = la; ax >= 0; ax--)
         for (auto ay = la - ax; ay >= 0; ay--)
@@ -340,28 +504,29 @@ void di_hrr(int la, int lb, int lc, int ld, int deri_center,
             std::array<int, 3> d = {dx, dy, ld - dx - dy};
             for (auto xyz = 0; xyz <= 2; xyz++)
             {
-            deri_rr(a,b,c,d, 0, xyz, scaled_map, normal_map, deri_map);
+            deri_rr(a,b,c,d, deri_center, xyz, scaled_map, normal_map, deri_map);
             }
             hgp(a,b,c,d,0,normal_map);
         }
         
     }
+    }
     // std::cout << "scaled_map size: " << scaled_map.size() << std::endl;
     // std::cout << "normal_map size: " << normal_map.size() << std::endl;
 //    std::cout << "os_map size: " << os_map.size() << std::endl;
 //get the integral first, including the normal map (hrr) and os map (vrr)
-    for (auto l = la +lb; l >= la; l--)
-    for (auto r = lc +ld; r >= lc; r--)
-    {   
-        eri(l,0,r,0,os_map);
-    }   
-    // std::cout << "os_map size: " << os_map.size() << std::endl;
-
-    // generate the vrr for scaled map and normal_map 
-    vrr(scaled_map, normal_map, os_map);
-    // std::cout << "scaled_map size: " << scaled_map.size() << std::endl;
-    // std::cout << "normal_map size: " << normal_map.size() << std::endl;
-    // std::cout << "os_map size: " << os_map.size() << std::endl;
+     for (auto l = la + lb; l >= la; l--)
+     for (auto r = lc + ld; r >= lc; r--)
+     {   
+         eri(l,0,r,0,os_map);
+     }   
+     // std::cout << "os_map size: " << os_map.size() << std::endl;
+ 
+     // generate the vrr for scaled map and normal_map 
+     vrr(scaled_map, normal_map, os_map);
+     // std::cout << "scaled_map size: " << scaled_map.size() << std::endl;
+     // std::cout << "normal_map size: " << normal_map.size() << std::endl;
+     // std::cout << "os_map size: " << os_map.size() << std::endl;
 }
 
 void save_deri(int la, int lb, int lc, int ld, int deri_center)
@@ -373,6 +538,8 @@ void save_deri(int la, int lb, int lc, int ld, int deri_center)
         center = 'B';
     else if (deri_center == 2)
         center = 'C';
+    else if (deri_center == 3)
+        center = 'D';
     auto lla = (la+1)*(la+2)/2;
     auto llb = (lb+1)*(lb+2)/2;
     auto llc = (lc+1)*(lc+2)/2;
@@ -426,11 +593,11 @@ void save_deri(int la, int lb, int lc, int ld, int deri_center)
     std::cout << "    }" << std::endl;
 }
 
-void d_code_print(int la, int lb, int lc, int ld,
+void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_list,
                   std::map<std::array<int, 14>, std::string>& scaled_map,
                   std::map<std::array<int, 13>, std::string>& normal_map,
                   std::map<std::array<int, 13>, std::string>& os_map,
-                  std::map<std::array<int, 13>, std::string>& deri_map)
+                  std::map<std::array<int, 14>, std::string>& deri_map)
 {
     // std::cout << HrrFuncName(la,lb,lc,ld) << std::endl;
     std::cout << "KERNEL void di_ssss(shell_pairs_gpu& ab, shell_pairs_gpu&cd, double* I_, double* dI_)\n{\n";
@@ -445,6 +612,7 @@ void d_code_print(int la, int lb, int lc, int ld,
 
     std::cout << "    double AB[3] = \n    {\n        ab.AB[0][idx],\n        ab.AB[1][idx],\n        ab.AB[2][idx]\n    };\n";
     std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idx],\n        cd.AB[1][idx],\n        cd.AB[2][idx]\n    };\n\n";
+    for (auto deri_center : deri_center_list)
     for (auto na = la + lb + 1; na >= la; na--)
     for (auto nb = 0; nb <= lb; nb++)
     for (auto nc = lc + ld; nc >= lc; nc--)
@@ -462,7 +630,7 @@ void d_code_print(int la, int lb, int lc, int ld,
             // std::array<int, 13> os_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0};
             if (bx == 0 and by == 0 and nb-bx-by == 0 and dx == 0 and dy == 0 and nd-dx-dy == 0)
             {   
-            std::array<int, 14> scaled_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, 0}; 
+            std::array<int, 14> scaled_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, deri_center}; 
             if (scaled_map.count(scaled_id) != 0)
                 std::cout << scaled_map.at(scaled_id);
             }   
@@ -611,6 +779,7 @@ void d_code_print(int la, int lb, int lc, int ld,
     }
 
     // scaled part
+    for (auto deri_center : deri_center_list)
     for (auto l = la +lb+1; l >= la; l--)
     for (auto r = lc +ld; r >= lc; r--)
     {   
@@ -623,10 +792,18 @@ void d_code_print(int la, int lb, int lc, int ld,
             std::array<int, 3> b = {0, 0, 0}; 
             std::array<int, 3> c = {cx, cy, r - cx - cy};
             std::array<int, 3> d = {0, 0, 0}; 
-            std::array<int, 14> scaled_id = {ax, ay, l-ax-ay, 0, 0, 0, cx, cy, r-cx-cy, 0, 0, 0, 0, 0};
+            std::array<int, 14> scaled_id = {ax, ay, l-ax-ay, 0, 0, 0, cx, cy, r-cx-cy, 0, 0, 0, 0, deri_center};
             if (scaled_map.count(scaled_id) != 0)
             {
-                std::cout << "        " <<  namemap(a,b,c,d,0) << "_alpha_con += " << "2 * za * " << namemap(a,b,c,d,0) << ";" << std::endl;
+                if (deri_center == 0)
+                    std::cout << "        " <<  namemap(a,b,c,d,0) << "_alpha_con += " << "2 * za * " << namemap(a,b,c,d,0) << ";" << std::endl;
+                else if (deri_center == 1)
+                    std::cout << "        " <<  namemap(a,b,c,d,0) << "_beta_con += " << "2 * zb * " << namemap(a,b,c,d,0) << ";" << std::endl;
+                else if (deri_center == 2)
+                    std::cout << "        " <<  namemap(a,b,c,d,0) << "_gamma_con += " << "2 * zc * " << namemap(a,b,c,d,0) << ";" << std::endl;
+                else if (deri_center == 3)
+                    std::cout << "        " <<  namemap(a,b,c,d,0) << "_delta_con += " << "2 * zd * " << namemap(a,b,c,d,0) << ";" << std::endl;
+
             }
         }   
     }    
@@ -661,6 +838,9 @@ void d_code_print(int la, int lb, int lc, int ld,
     }
 
     // print scaled hrr part (scaled map)
+    for (auto deri_center : deri_center_list)
+    {    
+    printf("Here is center: %d\n", deri_center);
     for (auto na = la + lb + 1; na >= la; na--)
     for (auto nb = 0; nb <= lb; nb++)
     for (auto nc = lc + ld; nc >= lc; nc--)
@@ -677,13 +857,13 @@ void d_code_print(int la, int lb, int lc, int ld,
         {   
             if (bx != 0 or by != 0 or nb-bx-by != 0 or dx != 0 or dy != 0 or nd-dx-dy != 0 ) 
             {   
-            std::array<int, 14> scaled_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, 0}; 
+            std::array<int, 14> scaled_id = {ax, ay, na-ax-ay, bx, by, nb-bx-by, cx, cy, nc-cx-cy, dx, dy, nd-dx-dy, 0, deri_center}; 
             if (scaled_map.count(scaled_id) != 0)
                 std::cout << scaled_map.at(scaled_id);
             }   
         }   
     }
-
+    }
     std::cout << "    // here is the contracted integral part" << std::endl;
 
     // print the integral
@@ -705,6 +885,7 @@ void d_code_print(int la, int lb, int lc, int ld,
     }
 
     // print the derivative equation
+    for (auto deri_center : deri_center_list)
     for (auto xyz = 0; xyz <= 2; xyz++)
     for (auto ax = la; ax >= 0; ax--)
     for (auto ay = la - ax; ay >= 0; ay--)
@@ -715,7 +896,7 @@ void d_code_print(int la, int lb, int lc, int ld,
     for (auto dx = ld; dx >= 0; dx--)
     for (auto dy = ld - dx; dy >= 0; dy--)
     {
-        std::array<int, 13> deri_id = {ax, ay, la - ax - ay, bx, by, lb - bx - by, cx, cy, lc - cx - cy, dx, dy, ld - dx - dy, xyz};
+        std::array<int, 14> deri_id = {ax, ay, la - ax - ay, bx, by, lb - bx - by, cx, cy, lc - cx - cy, dx, dy, ld - dx - dy, xyz, deri_center};
         if (deri_map.count(deri_id) != 0 )
             std::cout << deri_map.at(deri_id);
     }
@@ -725,8 +906,11 @@ void d_code_print(int la, int lb, int lc, int ld,
     save_int(la,lb,lc,ld);
 
     // save the derivative of integral
-    save_deri(la,lb,lc,ld,0);
-
+    // loop over the deri_center_list
+    for (auto deri_center : deri_center_list)
+    {
+        save_deri(la,lb,lc,ld,deri_center);
+    }
     std::cout << "}" << std::endl;
 }
 
@@ -734,21 +918,22 @@ void d_code_print(int la, int lb, int lc, int ld,
 
 int main()
 {
-    std::array<int, 3> a = {1, 0, 0};
+    std::array<int, 3> a = {3, 0, 0};
     std::array<int, 3> b = {0, 0, 0};
     std::array<int, 3> c = {0, 0, 0};
     std::array<int, 3> d = {0, 0, 0};
     // auto sen = deri_sen(a,b,c,d,'A',0);
     // std::cout << sen << std::endl;
+    std::vector deri_center_list = {0,1,2};
     std::map<std::array<int, 14>, std::string> scaled_map;
     std::map<std::array<int, 13>, std::string> normal_map;
     std::map<std::array<int, 13>, std::string> os_map;
-    std::map<std::array<int, 13>, std::string> deri_map;
+    std::map<std::array<int, 14>, std::string> deri_map;
     // deri_rr(a,b,c,d, 0, 0, scaled_map, normal_map);
     auto la = a[0] + a[1] + a[2]; 
     auto lb = b[0] + b[1] + b[2]; 
     auto lc = c[0] + c[1] + c[2]; 
-    auto ld = d[0] + d[1] + d[2]; 
+    auto ld = d[0] + d[1] + d[2];
     // std::cout << la << "," << lb << ", " << lc << ", " << ld << std::endl;
     // hrr_code_print(la+1, lb, lc, ld, scaled_map);
     // hrr_code_print(la-1, lb, lc, ld, normal_map);
@@ -756,9 +941,9 @@ int main()
 //    std::cout << "scaled_map size: " << scaled_map.size() << std::endl;
 //    std::cout << "normal_map size: " << normal_map.size() << std::endl;
 //    std::cout << "os_map size: " << os_map.size() << std::endl;
-    di_hrr(la, lb, lc, ld, 0, scaled_map, normal_map, os_map, deri_map);
+    di_hrr(la, lb, lc, ld, deri_center_list, scaled_map, normal_map, os_map, deri_map);
     // std::cout << "deri_map size: " << deri_map.size() << std::endl;
-    d_code_print(la,lb,lc,ld,scaled_map, normal_map, os_map, deri_map);
+    d_code_print(la, lb, lc, ld, deri_center_list, scaled_map, normal_map, os_map, deri_map);
 // for(auto it =os_map.cbegin(); it != os_map.cend(); ++it)
 // {
 //     std::cout << it->first[0]  << "\n";
