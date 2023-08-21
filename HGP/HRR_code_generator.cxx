@@ -233,7 +233,7 @@ void code_print(int la , int lb, int lc, int ld, std::map<std::array<int, 13>, s
     std::cout << "    if (idx < nab  and idy < ncd)\n    {\n";
 
     std::cout << "    double AB[3] = \n    {\n        ab.AB[0][idx],\n        ab.AB[1][idx],\n        ab.AB[2][idx]\n    };\n";
-    std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idx],\n        cd.AB[1][idx],\n        cd.AB[2][idx]\n    };\n\n";
+    std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idy],\n        cd.AB[1][idy],\n        cd.AB[2][idy]\n    };\n\n";
     // initial the contracted integral
     for (auto na = la + lb; na >= la; na--)
     for (auto nb = 0; nb <= lb; nb++)

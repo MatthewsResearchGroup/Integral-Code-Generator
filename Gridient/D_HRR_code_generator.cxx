@@ -487,7 +487,7 @@ void di_hrr(int la, int lb, int lc, int ld, std::vector<int>& deri_center_list,
     // if (deri_center == 0)
     for (auto deri_center : deri_center_list)
     {      
-        printf("Here is Center: %d", deri_center);
+        // printf("Here is Center: %d", deri_center);
     {
         for (auto ax = la; ax >= 0; ax--)
         for (auto ay = la - ax; ay >= 0; ay--)
@@ -590,7 +590,34 @@ void save_deri(int la, int lb, int lc, int ld, int deri_center)
             // printf("dx, dy, dz = %d, %d, %d\n ", dx, dy, dz);
         }
     }
-    std::cout << "    }" << std::endl;
+    // std::cout << "    }" << std::endl;
+}
+
+
+std::string DeriFuncName(int la, int lb, int lc, int ld, std::vector<int> deri_center_list)
+{
+    std::string s;
+    s.append("KERNEL void deri_");
+    for (auto deri_center : deri_center_list)
+    {
+        if (deri_center == 0)
+            s.append("A");
+        else if (deri_center == 1)
+            s.append("B");
+        else if (deri_center == 2)
+            s.append("C");
+        else if (deri_center == 3)
+            s.append("D");
+    }
+    s.append("_");
+    s.append(orbname(std::array<int, 3> {la,0,0}));
+    s.append(orbname(std::array<int, 3> {lb,0,0}));
+    s.append(orbname(std::array<int, 3> {lc,0,0}));
+    s.append(orbname(std::array<int, 3> {ld,0,0}));
+    s.append("(shell_pairs_gpu ab, shell_pairs_gpu cd,  double* I_, double* dI_ ");
+    s.append(")\n{");
+
+    return s;
 }
 
 void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_list,
@@ -599,8 +626,8 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
                   std::map<std::array<int, 13>, std::string>& os_map,
                   std::map<std::array<int, 14>, std::string>& deri_map)
 {
-    // std::cout << HrrFuncName(la,lb,lc,ld) << std::endl;
-    std::cout << "KERNEL void di_ssss(shell_pairs_gpu& ab, shell_pairs_gpu&cd, double* I_, double* dI_)\n{\n";
+    std::cout << DeriFuncName(la, lb, lc, ld, deri_center_list) << std::endl;
+    // std::cout << "KERNEL void di_ssss(shell_pairs_gpu& ab, shell_pairs_gpu&cd, double* I_, double* dI_)\n{\n";
     std::cout << "    auto idx = threadIdx.x + blockDim.x * blockIdx.x; // idx for shell_pairs ab \n\
     auto idy = threadIdx.y + blockDim.y * blockIdx.y; // idy for shell_pairs cd \n\n";
     
@@ -611,12 +638,12 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
     std::cout << "    if (idx < nab  and idy < ncd)\n    {\n";
 
     std::cout << "    double AB[3] = \n    {\n        ab.AB[0][idx],\n        ab.AB[1][idx],\n        ab.AB[2][idx]\n    };\n";
-    std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idx],\n        cd.AB[1][idx],\n        cd.AB[2][idx]\n    };\n\n";
+    std::cout << "    double CD[3] = \n    {\n        cd.AB[0][idy],\n        cd.AB[1][idy],\n        cd.AB[2][idy]\n    };\n\n";
     for (auto deri_center : deri_center_list)
     for (auto na = la + lb + 1; na >= la; na--)
-    for (auto nb = 0; nb <= lb; nb++)
-    for (auto nc = lc + ld; nc >= lc; nc--)
-    for (auto nd = 0; nd <= ld; nd++)
+    for (auto nb = 0; nb <= lb + 1; nb++)
+    for (auto nc = lc + ld + 1; nc >= lc; nc--)
+    for (auto nd = 0; nd <= ld + 1; nd++)
     {   
         for (auto ax = na; ax >= 0; ax--)
         for (auto ay = na - ax; ay >= 0; ay--)
@@ -638,10 +665,10 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
     }
 
 
-    for (auto na = la + lb; na >= la-1; na--)
-    for (auto nb = 0; nb <= lb; nb++)
-    for (auto nc = lc + ld; nc >= lc-1; nc--)
-    for (auto nd = 0; nd <= ld; nd++)
+    for (auto na = la + lb + 1; na >= la-1; na--)
+    for (auto nb = 0; nb <= lb + 1; nb++)
+    for (auto nc = lc + ld + 1; nc >= lc-1; nc--)
+    for (auto nd = 0; nd <= ld + 1; nd++)
     {   
         for (auto ax = na; ax >= 0; ax--)
         for (auto ay = na - ax; ay >= 0; ay--)
@@ -752,11 +779,11 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
         \n\
         for (auto i = 0; i < " << la+lb+lc+ld+2 << 
         " ; i++) \n\            fm[i] *= K;\n" << std::endl;
-        vrr_code_print(la+lb+1,0,lc+ld,0,os_map);
+        vrr_code_print(la+lb+1,0,lc+ld+1,0,os_map);
     // print vrr (os map )
      // vrr_code_print(la+lb+1,0,lc+ld,0,os_map);
 
-    // sumup the promitive functions integrals
+    // sumup the primitive functions integrals
     // normal part
     for (auto l = la +lb; l >= la-1; l--)
     for (auto r = lc +ld; r >= lc; r--)
@@ -780,8 +807,8 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
 
     // scaled part
     for (auto deri_center : deri_center_list)
-    for (auto l = la +lb+1; l >= la; l--)
-    for (auto r = lc +ld; r >= lc; r--)
+    for (auto l = la + lb + 1; l >= la; l--)
+    for (auto r = lc + ld + 1; r >= lc; r--)
     {   
         for (auto ax = l; ax >= 0; ax--)
         for (auto ay = l - ax; ay >= 0; ay--)
@@ -808,14 +835,14 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
         }   
     }    
 
-        std::cout << "        }" << std::endl;
+        std::cout << "    }" << std::endl;
 
         std::cout << "         //****************//" << std::endl;
     // print hrr part (normal map)
 
-    for (auto na = la + lb; na >= la; na--)
+    for (auto na = la + lb + 1; na >= la-1; na--)
     for (auto nb = 0; nb <= lb; nb++)
-    for (auto nc = lc + ld; nc >= lc; nc--)
+    for (auto nc = lc + ld + 1; nc >= lc-1; nc--)
     for (auto nd = 0; nd <= ld; nd++)
     {   
         for (auto ax = na; ax >= 0; ax--)
@@ -840,11 +867,11 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
     // print scaled hrr part (scaled map)
     for (auto deri_center : deri_center_list)
     {    
-    printf("Here is center: %d\n", deri_center);
+    // printf("Here is center: %d\n", deri_center);
     for (auto na = la + lb + 1; na >= la; na--)
-    for (auto nb = 0; nb <= lb; nb++)
-    for (auto nc = lc + ld; nc >= lc; nc--)
-    for (auto nd = 0; nd <= ld; nd++)
+    for (auto nb = 0; nb <= lb + 1; nb++)
+    for (auto nc = lc + ld + 1; nc >= lc; nc--)
+    for (auto nd = 0; nd <= ld + 1; nd++)
     {   
         for (auto ax = na; ax >= 0; ax--)
         for (auto ay = na - ax; ay >= 0; ay--)
@@ -864,25 +891,25 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
         }   
     }
     }
-    std::cout << "    // here is the contracted integral part" << std::endl;
+    // std::cout << "    // here is the contracted integral part" << std::endl;
 
-    // print the integral
-    for (auto ax = la; ax >= 0; ax--)
-    for (auto ay = la - ax; ay >= 0; ay--)
-    for (auto bx = lb; bx >= 0; bx--)
-    for (auto by = lb - bx; by >= 0; by--)
-    for (auto cx = lc; cx >= 0; cx--)
-    for (auto cy = lc - cx; cy >= 0; cy--)
-    for (auto dx = ld; dx >= 0; dx--)
-    for (auto dy = ld - dx; dy >= 0; dy--)
-    {
-        if (bx != 0 or by != 0 or lb-bx-by != 0 or dx != 0 or dy != 0 or ld-dx-dy != 0 )
-        {
-        std::array<int, 13> normal_id = {ax, ay, la - ax - ay, bx, by, lb - bx - by, cx, cy, lc - cx - cy, dx, dy, ld - dx - dy, 0};
-        if (normal_map.count(normal_id) != 0 )
-            std::cout << normal_map.at(normal_id);
-        }
-    }
+    // // print the integral
+    // for (auto ax = la; ax >= 0; ax--)
+    // for (auto ay = la - ax; ay >= 0; ay--)
+    // for (auto bx = lb; bx >= 0; bx--)
+    // for (auto by = lb - bx; by >= 0; by--)
+    // for (auto cx = lc; cx >= 0; cx--)
+    // for (auto cy = lc - cx; cy >= 0; cy--)
+    // for (auto dx = ld; dx >= 0; dx--)
+    // for (auto dy = ld - dx; dy >= 0; dy--)
+    // {
+    //     if (bx != 0 or by != 0 or lb-bx-by != 0 or dx != 0 or dy != 0 or ld-dx-dy != 0 )
+    //     {
+    //     std::array<int, 13> normal_id = {ax, ay, la - ax - ay, bx, by, lb - bx - by, cx, cy, lc - cx - cy, dx, dy, ld - dx - dy, 0};
+    //     if (normal_map.count(normal_id) != 0 )
+    //         std::cout << normal_map.at(normal_id);
+    //     }
+    // }
 
     // print the derivative equation
     for (auto deri_center : deri_center_list)
@@ -911,6 +938,7 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
     {
         save_deri(la,lb,lc,ld,deri_center);
     }
+    std::cout << "    }" << std::endl;
     std::cout << "}" << std::endl;
 }
 
@@ -918,13 +946,13 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
 
 int main()
 {
-    std::array<int, 3> a = {3, 0, 0};
+    std::array<int, 3> a = {2, 0, 0};
     std::array<int, 3> b = {0, 0, 0};
     std::array<int, 3> c = {0, 0, 0};
     std::array<int, 3> d = {0, 0, 0};
     // auto sen = deri_sen(a,b,c,d,'A',0);
     // std::cout << sen << std::endl;
-    std::vector deri_center_list = {0,1,2};
+    std::vector deri_center_list = {0};
     std::map<std::array<int, 14>, std::string> scaled_map;
     std::map<std::array<int, 13>, std::string> normal_map;
     std::map<std::array<int, 13>, std::string> os_map;
@@ -934,7 +962,6 @@ int main()
     auto lb = b[0] + b[1] + b[2]; 
     auto lc = c[0] + c[1] + c[2]; 
     auto ld = d[0] + d[1] + d[2];
-    // std::cout << la << "," << lb << ", " << lc << ", " << ld << std::endl;
     // hrr_code_print(la+1, lb, lc, ld, scaled_map);
     // hrr_code_print(la-1, lb, lc, ld, normal_map);
     // vrr(scaled_map, normal_map, os_map);
@@ -942,13 +969,17 @@ int main()
 //    std::cout << "normal_map size: " << normal_map.size() << std::endl;
 //    std::cout << "os_map size: " << os_map.size() << std::endl;
     di_hrr(la, lb, lc, ld, deri_center_list, scaled_map, normal_map, os_map, deri_map);
+//     std::cout << "scaled_map size: " << scaled_map.size() << std::endl;
+//     std::cout << "normal_map size: " << normal_map.size() << std::endl;
+//     std::cout << "os_map size: " << os_map.size() << std::endl;
+//     std::cout << "deri_map size: " << deri_map.size() << std::endl;
     // std::cout << "deri_map size: " << deri_map.size() << std::endl;
     d_code_print(la, lb, lc, ld, deri_center_list, scaled_map, normal_map, os_map, deri_map);
-// for(auto it =os_map.cbegin(); it != os_map.cend(); ++it)
-// {
-//     std::cout << it->first[0]  << "\n";
-// }
-
+//  for(auto it =os_map.cbegin(); it != os_map.cend(); ++it)
+//  {
+//      std::cout << it->second  << "\n";
+//  }
+// 
 }
     
 
