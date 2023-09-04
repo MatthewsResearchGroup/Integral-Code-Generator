@@ -3,23 +3,25 @@
 #include "name.h"
 #include <cmath>
 #include <iomanip>
+
 static int double_polynomial(std::array<int, 12> arr)
 {
     int res = 1;
     for (int i = 0; i < 12; i++)
-    {   
+    {
         if (arr[i] == 0)
             res *= 1;
         else if (arr[i] > 0)
-        {   
+        {
             for (int j = 2*arr[i] - 1; j >= 1; j-=2)
-            {   
+            {
                 res *= j;
-            }   
-        }   
-    }   
+            }
+        }
+    }
     return res;
 }
+
 
 std::string NewNameScheme(const std::array<int, 3>& ang_mom)
 {
@@ -62,13 +64,9 @@ int dirchoose(const std::array<int, 3> a)
     return xyz;
 }
 
-
+// four center
 std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c,const std::array<int, 3> d, int m)
 {
-    // auto stra = xyz_tran(a);
-    // auto strb = xyz_tran(b);
-    // auto strc = xyz_tran(c);
-    // auto strd = xyz_tran(d);
     auto stra = NewNameScheme(a);
     auto strb = NewNameScheme(b);
     auto strc = NewNameScheme(c);
@@ -86,6 +84,22 @@ std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const
     }   
 }
 
+// three center
+std::string namemap(const std::array<int, 3> a, const std::array<int, 3> b,const std::array<int, 3> c, int m)
+{
+    std::string s;
+    auto stra = NewNameScheme(a);
+    auto strb = NewNameScheme(b);
+    auto strc = NewNameScheme(c);
+    if (stra == "Error" || strb == "Error" || strc == "Error") 
+        // return "TERM_DOES_NOT_EXIST";
+        return "0.f";
+    else
+    {   
+        s = stra + strb + strc + std::to_string(m);
+        return s;
+    }   
+}
 
 char center_choose(std::array<int, 4> angmom)
 {// Array, the total momentum for four centers.
@@ -119,6 +133,37 @@ char center_choose(std::array<int, 4> angmom)
     } // return the center having the lowest anglar momentum
 }
 
+char center_choose(std::array<int, 3> angmom)
+{// Array, the total momentum for four centers.
+    auto num_centers = 3;
+    auto total_ang = 0;
+    auto min_ang = INT_MAX;
+    auto center = -1;
+    for (auto i = 0; i < num_centers; i++)
+    {
+        total_ang += angmom[i];
+        if (min_ang > angmom[i] && angmom[i] != 0){
+            min_ang = angmom[i];
+            center = i;
+            // std::cout<< i << min_ang <<"\n";
+        }
+    }
+    if (total_ang == 0)
+        return 'z' ; // means all orbitals are s orbital.
+
+    else if (center == 0)
+    {
+        return 'a';
+    }
+    else if (center == 1)
+    {
+        return 'b';
+    }
+    else if (center == 2)
+    {
+        return 'c';
+    }
+}
 
 char center_choose(int a, int b)
 {
@@ -138,6 +183,17 @@ bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::ar
         b[0] < 0 || b[1] < 0 || b[2] < 0 || \
         c[0] < 0 || c[1] < 0 || c[2] < 0 || \
         d[0] < 0 || d[1] < 0 || d[2] < 0
+        )
+        return false;
+    else
+        return true;
+}
+
+bool intex(const std::array<int,3>& a, const std::array<int,3>& b, const std::array<int,3>& c) // integral exists or not
+{
+    if (a[0] < 0 || a[1] < 0 || a[2] < 0 || \
+        b[0] < 0 || b[1] < 0 || b[2] < 0 || \
+        c[0] < 0 || c[1] < 0 || c[2] < 0 
         )
         return false;
     else
