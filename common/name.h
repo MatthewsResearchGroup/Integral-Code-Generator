@@ -1,6 +1,12 @@
 #ifndef _NAME_H
 #define _NAME_H
 #include <array>
+#include <string>
+#include <iostream>
+#include "name.h"
+#include <cmath>
+#include <iomanip>
+#include <climits>
 
 std::string NewNameScheme(const std::array<int, 3>& ang_mom);
 int dirchoose(const std::array<int, 3> a);

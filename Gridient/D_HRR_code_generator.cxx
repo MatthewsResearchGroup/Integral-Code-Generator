@@ -946,14 +946,13 @@ void d_code_print(int la, int lb, int lc, int ld, std::vector<int>& deri_center_
 
 int main()
 {
-/*
-    std::array<int, 3> a = {2, 0, 0};
-    std::array<int, 3> b = {0, 0, 0};
-    std::array<int, 3> c = {0, 0, 0};
+    std::array<int, 3> a = {3, 0, 0};
+    std::array<int, 3> b = {3, 0, 0};
+    std::array<int, 3> c = {4, 0, 0};
     std::array<int, 3> d = {0, 0, 0};
     // auto sen = deri_sen(a,b,c,d,'A',0);
     // std::cout << sen << std::endl;
-    std::vector deri_center_list = {0};
+    std::vector deri_center_list = {2};
     std::map<std::array<int, 14>, std::string> scaled_map;
     std::map<std::array<int, 13>, std::string> normal_map;
     std::map<std::array<int, 13>, std::string> os_map;
@@ -981,13 +980,12 @@ int main()
 //      std::cout << it->second  << "\n";
 //  }
 // 
-*/
-    int la = 2 ;
-    int lb = 1 ;
-    int lc = 0 ;
-    std::map<std::array<int, 10>, std::string> osmap;
-    eri(la,lb,lc,osmap);
-    vrr_code_print(la , lb, lc, osmap);
+    // int la = 2 ;
+    // int lb = 1 ;
+    // int lc = 0 ;
+    // std::map<std::array<int, 10>, std::string> osmap;
+    // eri(la,lb,lc,osmap);
+    // vrr_code_print(la , lb, lc, osmap);
 }
     
 

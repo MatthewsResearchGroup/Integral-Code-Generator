@@ -7,3 +7,5 @@
 /HGP/*log
 /Gridient/dhrr
 /MD/*out
+/*/.deps/
+/*/log

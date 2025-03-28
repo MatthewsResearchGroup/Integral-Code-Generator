@@ -1,5 +1,5 @@
-CXX=g++
-CXXFLAGS=-std=c++17 -I../common -I../OS -I../HGP
+CXX=/usr/bin/g++
+CXXFLAGS=-std=c++17  -I../common -I../OS -I../HGP
 
 exe:=dhrr
 src:=$(shell find . -iname "*cxx") $(shell find ../common -iname "*.cxx") $(shell find ../OS -iname "*.cxx") $(shell find ../HGP -iname "*.cxx")
@@ -21,6 +21,6 @@ $(exe): $(objs)
 
 %.o: %.cxx
 	@mkdir -p $(dir $@).deps
-	$(CXX) $(CXXFLAGS) -MT $@ -MF $(dir $@).deps/$(notdir $(@:.o=.d)) -o $@ -c $<
+	$(CXX) $(CXXFLAGS) -MT $@ -MP -MMD -MF $(dir $@).deps/$(notdir $(@:.o=.d)) -o $@ -c $<
 
 

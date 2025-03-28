@@ -176,10 +176,10 @@ void RNML_print(int la, int lb, int lc, int ld, std::map<std::array<int, 4>, std
 
 int main()
 {
-    int la = 4;
-    int lb = 4;
-    int lc = 4;
-    int ld = 4;
+    int la = 2;
+    int lb = 2;
+    int lc = 2;
+    int ld = 2;
     int N = 6;
     int M = 6;
     int L = 6;

@@ -1,8 +1,4 @@
-#include <string>
-#include <iostream>
-#include "name.h"
-#include <cmath>
-#include <iomanip>
+#include <name.h>
 
 static int double_polynomial(std::array<int, 12> arr)
 {
