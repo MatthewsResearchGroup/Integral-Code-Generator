@@ -1,10 +1,8 @@
 # Overview
-The bottlelock of quantum chemistry is the masssive evluation of two-electron replusion integral, whose complexity is O(N^4).
+The kernel generate for the ERIs sequential code. It can generate OS algorithm for CUDA framework with contracted and uncontracted integrals. More support for MD and DRK algorithm will be implemented soon. 
 
 ## Obara-Saika algorithm
 
-## Head-Gordon and Pople algorithm
-
 ## MD algorithm
 
-## Rys algorithm
+## DRK algorithm
